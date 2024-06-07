@@ -105,6 +105,6 @@ async def root():
 import uvicorn
 if __name__ == "__main__":
   # IP:Injection Pressure (해석 사출압)
-  uvicorn.run("IP:app", host="0.0.0.0", port=9999, log_level="debug",
+  uvicorn.run("ip:app", host="0.0.0.0", port=9999, log_level="debug",
     proxy_headers=True, reload=True)
 
