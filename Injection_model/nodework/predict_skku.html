@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>사출압데이터 분석</title>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Intro Section -->
+    <section class="intro-section text-center bg-dark text-white"
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="display-6"> 사출압데이터 분석 서비스 </h1>
+                <p class="text-muted" style="font-size: 14px; color: silver;">made by 주가성 & 김영진</p>
+                <p class="lead"> <a href="https://github.com/0ginny/SKKU_ML_SERVE_3" style="color: pink;">github.com/0ginny/SKKU_ML_SERVE_3 </a></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <style>
+        .highlight-box {
+            border: 5px solid #FF5733;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+
+    <style>
+        .highlighted-text {
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+        }
+    </style>
+
+    <style>
+        .highlight2-box {
+            border: 5px solid silver;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: silver; /* 배경색을 은색으로 설정 */
+        }
+    </style>
+
+    <style>
+        .highlighted2-text {
+            font-size: 20px;
+            padding: 10px;
+            color: white; /* 글자색을 흰색으로 설정 */
+        }
+    </style>
+
+
+
+
+    <!-- 탭 내용 추가 -->
+    <div class="tab-content" id="myTabContent">
+
+        <div class="tab-pane fade show active" id="new" role="tabpanel" aria-labelledby="new-tab">
+
+            <!-- 첫번째 탭  -->
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <h1 class="mb-3 text-center" style="font-size: 20px;"> 모델: cd_Tray.go4 </h1>
+                        <div class="text-center">
+                            <img src="/images/cd_Tray.png" alt="cd_Tray.png" class="img-fluid" style="max-width: 50%; height: auto;">
+                        </div>
+                        <br>
+                        <!-- Add the image here -->
+                        <div id="imageContainer">
+                            <div class="highlight2-box">
+                                <label class="highlighted2-text">
+                                    <b style="font-size: 20px;">사출압 데이터 분석 방법</b><br>
+                                    조건값(금형온도, 수지온도 및 충전시간)을 입력 후 분석시작을 클릭하세요. AI가 분석한 사출압 값이 산출됩니다.
+                                </label>
+                            </div>
+                            <img src="/images/ip.png" alt="slab_predict.png" class="img-fluid">
+                        </div>
+                        <br>
+                        <form>
+
+                            <div class="form-group">
+                                <label for="features1"><b>수지온도</b> <span style="font-size: 14px; color: #888;">추천 수지온도: 210~230</span></label>
+                                <input type="text" class="form-control" id="features1" placeholder="수지온도를 입력하세요">
+                            </div>
+
+
+                            <div class="form-group">
+                                <label for="features2"><b>금형온도</b><span style="font-size: 14px; color: #888;">추천 금형온도: 40~70</span></label>
+                                <input type="text" class="form-control" id="features2" placeholder="금형온도를 입력하세요">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="features3"><b>충전 시간</b><span style="font-size: 14px; color: #888;">추천 충전시간: 0.5~3.5</span></label>
+                                <input type="text" class="form-control" id="features3" placeholder="충전시간을 입력하세요">
+                            </div>
+
+                            <button type="button" class="btn btn-success btn-block" id="downloadBtn1">샘플데이터 다운로드</button>
+                            <br>
+                            <button type="button" class="btn btn-primary btn-block" id="prdBtn">분석 시작</button>
+                            <div id=baseResult></div>
+                            <!--                 <div class="form-group">
+                                <label id="input4">예측결과 </label>
+                            </div> -->
+                        </form>
+                        <div class="mt-4" id="result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        // 새로운 탭 클릭 시 해당 탭으로 이동하는 함수
+        $(document).ready(function () {
+            $('#new-tab').on('click', function (e) {
+                e.preventDefault()
+                $(this).tab('show')
+            })
+        });
+
+    </script>
+
+
+    <script>
+        document.getElementById('downloadBtn1').addEventListener('click', function () {
+            var link = document.createElement("a");
+            link.href = "/datas/ex_ai_ch1_case1_data.xls.xlsx"; // 다운로드할 파일의 경로
+            link.download = "ex_ai_ch1_case1_data.xls.xlsx"; // 다운로드될 파일의 이름
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+
+
+    <script>
+
+        // config.json 파일 로드
+        var newHostname = "3.38.108.13";
+        var newPort = "9999"
+
+        // 분석시작 버튼 클릭 시 분석서버와 연계 코드
+        $("#prdBtn").click(function () {
+            $("#baseResult").empty();
+
+            let selectedFeat1 = Number($("#features1").val());
+            let selectedFeat2 = Number($("#features2").val());
+            let selectedFeat3 = Number($("#features3").val());
+
+            let urlBase = `http://${newHostname}:${newPort}`;
+
+            let urlFullBase = urlBase + "/predict";
+
+            let reqDataBase = {
+                'inResinTemp': selectedFeat1,
+                'inMoldTemp': selectedFeat2,
+                'inTime': selectedFeat3,
+            };
+
+            const headersBase = {
+                "Content-Type": "application/json"
+            };
+
+            const dataBase = JSON.stringify(reqDataBase);
+            console.log(dataBase);
+            // ['ResinTemp', 'MoldTemp', 'Time']
+            $.ajax({
+                url: urlFullBase,
+                headers: headersBase,
+                data: dataBase,
+                method: 'POST',
+                success: function (data) {
+                    console.log(data);
+                    // $('#input4').text(${data.result});
+                    $("#baseResult").append(`<div class="highlight-box">
+                    <div id="baseResult" class="highlighted-text">
+                        사출압: ${data.prediction}
+                    </div>
+</div>`)
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
