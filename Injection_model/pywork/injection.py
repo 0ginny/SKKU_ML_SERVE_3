@@ -70,7 +70,8 @@ async def predictDl(x:InDataset):
     # print(InjectionData)
     predictValue = model.predict(scaler.transform(InjectionData))
     # print("prediction : ", predictValue)
-    result = {"prediction":predictValue}
+    result = {"prediction":predictValue,
+              "resintempgraph" : []}
     return result
 
 @app.get("/")
