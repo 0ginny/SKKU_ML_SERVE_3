@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -75,7 +75,6 @@
             <div class="container mt-5">
                 <div class="row justify-content-center">
                     <div class="col-md-6">
-                        <!-- 모델 선택 드롭다운 -->
                         <div class="dropdown mb-3">
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="modelDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 모델 선택
@@ -93,7 +92,6 @@
                         <div class="text-center">
                             <img id="modelImage" src="/images/Staroy HP1000X.png" alt="Staroy HP1000X.png" class="img-fluid" style="max-width: 50%; height: auto;">
                         </div>
-
                         <!-- Add the image here -->
                         <div id="imageContainer">
                             <div class="highlight2-box">
@@ -112,7 +110,6 @@
                                 <input type="text" class="form-control" id="features1" placeholder="수지온도를 입력하세요">
                             </div>
 
-
                             <div class="form-group">
                                 <label for="features2"><b>금형온도</b><span style="font-size: 14px; color: #888;">추천 금형온도: 40~70</span></label>
                                 <input type="text" class="form-control" id="features2" placeholder="금형온도를 입력하세요">
@@ -122,12 +119,12 @@
                                 <label for="features3"><b>충전 시간</b><span style="font-size: 14px; color: #888;">추천 충전시간: 0.5~3.5</span></label>
                                 <input type="text" class="form-control" id="features3" placeholder="충전시간을 입력하세요">
                             </div>
+
+                            <button type="button" class="btn btn-success btn-block" id="downloadBtn1">샘플데이터 다운로드</button>
                             <br>
                             <button type="button" class="btn btn-primary btn-block" id="prdBtn">분석 시작</button>
-                            <div id=baseResult></div>
-                            <!--                 <div class="form-group">
-            <label id="input4">예측결과 </label>
-        </div> -->
+                            <div id="baseResult"></div>
+                            <div class="mt-4" id="chartContainer"></div>
                         </form>
                         <div class="mt-4" id="result"></div>
                     </div>
@@ -155,87 +152,87 @@
     </script>
 
     <script>
-      var predictions
-      // config.json 파일 로드
-      var newHostname = "43.203.235.74";
-      var newPort = "9999";
+        var predictions
+        // config.json 파일 로드
+        var newHostname = "43.203.235.74";
+        var newPort = "9999";
 
-      // 분석시작 버튼 클릭 시 분석서버와 연계 코드
-      $("#prdBtn").click(function () {
-          $("#baseResult").empty();
+        // 분석시작 버튼 클릭 시 분석서버와 연계 코드
+        $("#prdBtn").click(function () {
+            $("#baseResult").empty();
 
-          let selectedFeat1 = Number($("#features1").val());
-          let selectedFeat2 = Number($("#features2").val());
-          let selectedFeat3 = Number($("#features3").val());
+            let selectedFeat1 = Number($("#features1").val());
+            let selectedFeat2 = Number($("#features2").val());
+            let selectedFeat3 = Number($("#features3").val());
 
-          let urlBase = `http://${newHostname}:${newPort}`;
+            let urlBase = `http://${newHostname}:${newPort}`;
 
-          let urlFullBase = urlBase + "/predict";
+            let urlFullBase = urlBase + "/predict";
 
-          let reqDataBase = {
-              'inResinTemp': selectedFeat1,
-              'inMoldTemp': selectedFeat2,
-              'inTime': selectedFeat3,
-          };
+            let reqDataBase = {
+                'inResinTemp': selectedFeat1,
+                'inMoldTemp': selectedFeat2,
+                'inTime': selectedFeat3,
+            };
 
-          const headersBase = {
-              "Content-Type": "application/json"
-          };
+            const headersBase = {
+                "Content-Type": "application/json"
+            };
 
-          const dataBase = JSON.stringify(reqDataBase);
-          console.log(dataBase);
+            const dataBase = JSON.stringify(reqDataBase);
+            console.log(dataBase);
 
-          $.ajax({
-              url: urlFullBase,
-              headers: headersBase,
-              data: dataBase,
-              method: 'POST',
-              success: function (data) {
-                  console.log(data);
-                  $("#baseResult").append(`<div class="highlight-box">
-                  <div id="baseResult" class="highlighted-text">
-                      사출압: ${data.prediction}
-                  </div>
-                  </div>`);
-                  predictions = data.predictions.map(item => item[0]);
-                  console.log(predictions)
-              
-          
-            // 그래프가 그려질 캔버스 요소 추가
-            $('#chartContainer').html('<canvas id="myChart1" width="400" height="200"></canvas>');
+            $.ajax({
+                url: urlFullBase,
+                headers: headersBase,
+                data: dataBase,
+                method: 'POST',
+                success: function (data) {
+                    console.log(data);
+                    $("#baseResult").append(`<div class="highlight-box">
+                      <div id="baseResult" class="highlighted-text">
+                          사출압: ${data.prediction}
+                      </div>
+                      </div>`);
+                    predictions = data.predictions.map(item => item[0]);
+                    console.log(predictions)
 
-var ctx1 = document.getElementById('myChart1').getContext('2d');
-var myChart1 = new Chart(ctx1, {
-    type: 'line',
-    data: {
-        labels: ['1', '2', '3', '4', '5'],
-        datasets: [{
-            label: '사출압(Mpa)',
-            data: predictions,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            fill: false,
-            tension: 0.1
-        }]
-    },
-    options: {
-        plugins: {
-            title: {
-                display: true,
-                text: '사출온도 변화시 사출압'
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                suggestedMin: Math.min(...predictions) - 1,
-                suggestedMax: Math.max(...predictions) + 1
-            }
-        }
-    }
-});   
-            }
+
+                    // 그래프가 그려질 캔버스 요소 추가
+                    $('#chartContainer').html('<canvas id="myChart1" width="400" height="200"></canvas>');
+
+                    var ctx1 = document.getElementById('myChart1').getContext('2d');
+                    var myChart1 = new Chart(ctx1, {
+                        type: 'line',
+                        data: {
+                            labels: ['1', '2', '3', '4', '5'],
+                            datasets: [{
+                                label: '사출압(Mpa)',
+                                data: predictions,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                fill: false,
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '사출온도 변화시 사출압'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    suggestedMin: Math.min(...predictions) - 1,
+                                    suggestedMax: Math.max(...predictions) + 1
+                                }
+                            }
+                        }
+                    });
+                }
+            });
         });
-      });
 
         // 새로운 탭 클릭 시 해당 탭으로 이동하는 함수
         $(document).ready(function () {
