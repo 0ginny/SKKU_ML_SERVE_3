@@ -25,9 +25,9 @@ app.use(function(req, res, next) {
 // predict - 예측
 app.get('/', function (req, res) {
 	// console.log('Received a request to /predict'); // 여기에 새로운 콘솔로그 추가
-	res.sendFile(__dirname +"/predict.html")
+	res.sendFile(__dirname +"/predict_revise.html")
 });
 
-server.listen(80, function() {
+server.listen(3000, function() {
     console.log('Server started ...');
 });
