@@ -67,11 +67,10 @@ async def predictDl(x:InDataset):
     # 예측을 위한 데이터셋 생성
     InjectionData = pd.DataFrame([[inResinTemp, inMoldTemp, inTime]])
     # 예측
-    # print(InjectionData)
-    predictValue = model.predict(scaler.transform(InjectionData))
-    # print("prediction : ", predictValue)
-    result = {"prediction":predictValue,
-              "resintempgraph" : []}
+    print(InjectionData)
+    predictValue = model.predict(scaler.transform(InjectionData))[0][0]
+    print("prediction : ", predictValue)
+    result = {"prediction": str(predictValue)}
     return result
 
 @app.get("/")
@@ -81,6 +80,6 @@ async def root():
 import uvicorn
 if __name__ == "__main__":
   # IP:Injection Pressure (해석 사출압)
-  uvicorn.run("ip:app", host="0.0.0.0", port=9999, log_level="debug",
+  uvicorn.run("injection:app", host="0.0.0.0", port=9999, log_level="debug",
     proxy_headers=True, reload=True)
 
