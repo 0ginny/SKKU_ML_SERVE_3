@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>분석 페이지</title>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- Intro Section -->
+<section class="intro-section text-center bg-dark text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="display-6"> SAMPLECODE </h1>
+                <p class="lead"> <a href="https://www.youtube.com/hkcode" style="color: yellow;">www.youtube.com/hkcode </a></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 탭 메뉴 추가 -->
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="new-tab" data-toggle="tab" href="#new" role="tab" aria-controls="new" aria-selected="true">금형 사출압 예측</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="analysis-tab" data-toggle="tab" href="#analysis" role="tab" aria-controls="analysis" aria-selected="false">예측#2</a>
+    </li>
+</ul>
+
+   
+
+<!-- 탭 내용 추가 -->
+<div class="tab-content" id="myTabContent">
+
+    <div class="tab-pane fade show active" id="new" role="tabpanel" aria-labelledby="new-tab">
+        
+        <!-- 첫번째 탭  -->
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <h1 class="mb-3 text-center" style="font-size: 20px;"  > 금형 사출압 예측 </h1>
+                    <br>
+                                        <!-- Add the image here -->
+                    <div id="imageContainer">
+                        <label> 아래 특성값을 넣으면 사출압이 예측됩니다. </label>
+                        <img src="./images/abs_gf_380g.png" alt="abs_gf_380g.png" class="img-fluid">
+                    </div>
+                    <br>
+                    <form>
+
+                        <div class="form-group">
+                            <label for="input1">수지온도 </label>
+                            <input type="text" class="form-control" id="features1" placeholder="값을 입력하세요">
+                        </div>
+
+                        
+                        <div class="form-group">
+                            <label for="input2">금형온도</label>
+                            <input type="text" class="form-control" id="features2" placeholder="값을 입력하세요">
+                        </div>
+ 
+                         <div class="form-group">
+                            <label for="input3">충전시간</label>
+                            <input type="text" class="form-control" id="features3" placeholder="값을 입력하세요">
+                        </div>
+
+
+                        <!-- <button type="button" class="btn btn-success btn-block" id="downloadBtn1">샘플데이터 다운로드</button>
+                        <br> -->
+                        <button type="button" class="btn btn-primary btn-block" id="prdBtn">분석 시작</button>
+                        <div id=baseResult></div>
+        <!--                 <div class="form-group">
+                            <label id="input4">예측결과 </label>
+                        </div> -->
+                     </form>
+                    <div class="mt-4" id="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="analysis" role="tabpanel" aria-labelledby="analysis-tab">
+        <!-- 기존 분석 페이지 내용 -->
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <h1 class="mb-3 text-center" style="font-size: 20px;"  > 예측 페이지 #2 </h1>
+                    <label>준비중</label>
+                    <div class="mt-4" id="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // 새로운 탭 클릭 시 해당 탭으로 이동하는 함수
+    $(document).ready(function() {
+        $('#new-tab').on('click', function (e) {
+            e.preventDefault()
+            $(this).tab('show')
+        })
+    });
+
+</script>
+
+
+<script>
+    document.getElementById('downloadBtn1').addEventListener('click', function() {
+        var link = document.createElement("a");
+        link.href = "/datas/slab_predict_sample.xlsx"; // 다운로드할 파일의 경로
+        link.download = "slab_predict_sample.xlsx"; // 다운로드될 파일의 이름
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+</script>
+
+
+<script>
+
+    // config.json 파일 로드
+    var newHostname = "3.36.60.96";
+    var newPort = "9999"
+
+      // 분석시작 버튼 클릭 시 분석서버와 연계 코드
+      $("#prdBtn").click(function(){
+
+        let selectedFeat1 = Number($("#features1").val());
+        let selectedFeat2 = Number($("#features2").val());
+        let selectedFeat3 = Number($("#features3").val());
+
+
+        let urlBase = `http://${newHostname}:${newPort}`;
+
+        let urlFullBase = urlBase+"/predict";
+
+        let reqDataBase = {
+          'inResinTemp': selectedFeat1,
+          'inMoldTemp': selectedFeat2,
+          'inTime': selectedFeat3,
+        };
+ 
+        const headersBase = {
+          "Content-Type": "application/json"
+        };
+
+        const dataBase = JSON.stringify(reqDataBase);
+        console.log(dataBase);
+        // ['HCLUS', 'PRO_PERCENT', 'HO_YN', 'PRO_YN']
+        $.ajax({
+          url: urlFullBase,
+          headers: headersBase,
+          data: dataBase,
+          method: 'POST',
+          success: function(data) {
+            console.log(data);
+            // $('#input4').text(${data.result});
+            $("#baseResult").text(`<div> 수지온도: ${selectedFeat1} 금형온도: ${selectedFeat2} 사출시간: ${selectedFeat3} 인 경우\n필요 사출압 : ${data.prediction}]</div>`);
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

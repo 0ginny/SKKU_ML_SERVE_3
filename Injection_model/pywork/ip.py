@@ -19,7 +19,6 @@ Original file is located at
 """# 모델 불러오기"""
 
 import pickle
-from tensorflow.keras.models import load_model
 import pandas as pd
 
 # 서버 관리용 fastapi 의존 라이브러리
@@ -45,19 +44,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-with open("./Injection_Pressure.dump","rb") as fr:
+with open("./Injection_Pressure2.dump","rb") as fr:
     loadedRef = pickle.load(fr)
 
 class InDataset(BaseModel):
     inResinTemp : int
     inMoldTemp : int
     inTime : float
-
-loadedModel = load_model("./Injection_Pressure.h5")
-
-loadedModel.summary()
-
-loadedRef
 
 @app.post("/predict", status_code=200)
 async def predictDl(x:InDataset):
@@ -71,7 +64,7 @@ async def predictDl(x:InDataset):
     TemperatureData = pd.DataFrame( [[ inResinTemp, inMoldTemp, inTime ]] )
     # 예측
     print(TemperatureData)
-    predictValue =  int(loadedModel.predict( TemperatureData)[0][0])
+    predictValue =  int(loadedRef['model'].predict( TemperatureData)[0][0])
     print(predictValue)
     result = {"prediction":predictValue}
     return result
@@ -90,17 +83,6 @@ async def predictDl(x:InDataset):
 @app.get("/")
 async def root():
     return {"message":"onine"}
-
-# import nest_asyncio
-# from pyngrok import ngrok
-# import uvicorn
-
-# auth_token = "2hRjTiUFYINUamvIkMTVUl2hJib_5pMtQqqMBwZP1BDKWyDKn"
-# ngrok.set_auth_token(auth_token)
-# ngrokTunnel = ngrok.connect(8000)
-# print("공용 URL", ngrokTunnel.public_url)
-# nest_asyncio.apply()
-# uvicorn.run(app, port=8000)
 
 import uvicorn
 if __name__ == "__main__":
