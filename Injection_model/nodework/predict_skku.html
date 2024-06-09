@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>사출압데이터 분석</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -171,7 +172,7 @@
     <script>
 
         // config.json 파일 로드
-        var newHostname = "3.38.108.13";
+        var newHostname = "43.203.235.74";
         var newPort = "9999"
 
         // 분석시작 버튼 클릭 시 분석서버와 연계 코드
@@ -212,6 +213,42 @@
                                                     사출압: ${data.prediction}
                                                 </div>
                                             </div>`)
+                                            predictions = data.predictions.map(item => item[0]);
+                  console.log(predictions)
+              
+          
+            // 그래프가 그려질 캔버스 요소 추가
+            $('#chartContainer').html('<canvas id="myChart1" width="400" height="200"></canvas>');
+
+var ctx1 = document.getElementById('myChart1').getContext('2d');
+var myChart1 = new Chart(ctx1, {
+    type: 'line',
+    data: {
+        labels: ['1', '2', '3', '4', '5'],
+        datasets: [{
+            label: '사출압(Mpa)',
+            data: predictions,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: false,
+            tension: 0.1
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: '사출온도 변화시 사출압'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                suggestedMin: Math.min(...predictions) - 1,
+                suggestedMax: Math.max(...predictions) + 1
+            }
+        }
+    }
+});   
 
                 }
             });

@@ -56,8 +56,28 @@ class InDataset(BaseModel):
     inMoldTemp : int
     inTime : float
 
+def resin_graph_data(base,inMoldTemp,inTime):
+    # 예측할 값의 범위 설정
+    min_base = base -5  # inResinTemp - 5
+    max_base = base + 5  # inResinTemp + 5
+    num_values = 5  # 생성할 값의 개수
+
+    # np.linspace를 사용하여 주어진 범위에서 num_values 개수만큼 값 생성
+    resin_temps = np.linspace(min_base, max_base, num_values).reshape(-1, 1)
+
+    # 생성된 값을 이용하여 데이터프레임 생성
+    InjectionData = pd.DataFrame(np.hstack([resin_temps, np.full((num_values, 1), inMoldTemp), np.full((num_values, 1), inTime)]),
+                                columns=['RESIN_TEMPERATURE', 'MOLD_TEMPERATURE', 'INJECTION_TIME'])
+    # 예측
+    predictions = model.predict(scaler.transform(np.array(InjectionData)))
+
+    # print("Resin Temps:\n", InjectionData['inResinTemp'])
+    print("Predictions:\n", predictions)
+    return predictions
+
 @app.post("/predict", status_code=200)
 async def predictDl(x:InDataset):
+
     print(x)
     # 화면입력데이터 변수 할당
     inResinTemp = x.inResinTemp
@@ -70,7 +90,9 @@ async def predictDl(x:InDataset):
     print(InjectionData)
     predictValue = model.predict(scaler.transform(InjectionData))[0][0]
     print("prediction : ", predictValue)
-    result = {"prediction": str(predictValue)}
+    result = {'predictions': resin_graph_data(inResinTemp, inMoldTemp, inTime).tolist(),
+            'prediction': predictValue}
+
     return result
 
 @app.get("/")
