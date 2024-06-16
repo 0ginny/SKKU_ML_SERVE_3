@@ -20,6 +20,7 @@ Original file is located at
 
 import pickle
 import pandas as pd
+import numpy as np
 
 # 서버 관리용 fastapi 의존 라이브러리
 import uvicorn
@@ -31,6 +32,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from fastapi.middleware.cors import CORSMiddleware
+
 origins = ["*"]
 
 app = FastAPI(title="ML API")
@@ -44,64 +46,100 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-with open("dlmodel_240608.pickle","rb") as fr:
+with open("dlmodel_240608.pickle", "rb") as fr:
     loadedRef = pickle.load(fr)
 
 # 모델과 스케일러 정의
 model = loadedRef['model']
 scaler = loadedRef['scaler']
 
+
 class InDataset(BaseModel):
-    inResinTemp : int
-    inMoldTemp : int
-    inTime : float
+    inResinTemp: int
+    inMoldTemp: int
+    inTime: float
 
-def resin_graph_data(base,inMoldTemp,inTime):
-    # 예측할 값의 범위 설정
-    min_base = base -5  # inResinTemp - 5
-    max_base = base + 5  # inResinTemp + 5
-    num_values = 5  # 생성할 값의 개수
 
-    # np.linspace를 사용하여 주어진 범위에서 num_values 개수만큼 값 생성
-    resin_temps = np.linspace(min_base, max_base, num_values).reshape(-1, 1)
+def resin_graph_data(inResinTemp, inMoldTemp, inTime):
+    # 설정할 범위 및 개수
+    changeRanges = [10, 5, 0.5]
+    num_values = 5
 
-    # 생성된 값을 이용하여 데이터프레임 생성
-    InjectionData = pd.DataFrame(np.hstack([resin_temps, np.full((num_values, 1), inMoldTemp), np.full((num_values, 1), inTime)]),
-                                columns=['RESIN_TEMPERATURE', 'MOLD_TEMPERATURE', 'INJECTION_TIME'])
-    # 예측
-    predictions = model.predict(scaler.transform(np.array(InjectionData)))
+    # 각 parameter에 대한 값 생성 함수
+    def generate_values(param, change_range):
+        min_val = param - change_range
+        max_val = param + change_range
+        return np.linspace(min_val, max_val, num_values).reshape(-1, 1)
 
-    # print("Resin Temps:\n", InjectionData['inResinTemp'])
-    print("Predictions:\n", predictions)
-    return predictions
+    # inResinTemp만 변경하여 데이터프레임 생성 및 예측
+    resin_temps = generate_values(inResinTemp, changeRanges[0])
+    InjectionData1 = pd.DataFrame(
+        np.hstack([resin_temps, np.full((num_values, 1), inMoldTemp), np.full((num_values, 1), inTime)]),
+        columns=['RESIN_TEMPERATURE', 'MOLD_TEMPERATURE', 'INJECTION_TIME'])
+    predictions1 = model.predict(scaler.transform(np.array(InjectionData1)))
+
+    # inMoldTemp만 변경하여 데이터프레임 생성 및 예측
+    mold_temps = generate_values(inMoldTemp, changeRanges[1])
+    InjectionData2 = pd.DataFrame(
+        np.hstack([np.full((num_values, 1), inResinTemp), mold_temps, np.full((num_values, 1), inTime)]),
+        columns=['RESIN_TEMPERATURE', 'MOLD_TEMPERATURE', 'INJECTION_TIME'])
+    predictions2 = model.predict(scaler.transform(np.array(InjectionData2)))
+
+    # inTime만 변경하여 데이터프레임 생성 및 예측
+    times = generate_values(inTime, changeRanges[2])
+    InjectionData3 = pd.DataFrame(
+        np.hstack([np.full((num_values, 1), inResinTemp), np.full((num_values, 1), inMoldTemp), times]),
+        columns=['RESIN_TEMPERATURE', 'MOLD_TEMPERATURE', 'INJECTION_TIME'])
+    predictions3 = model.predict(scaler.transform(np.array(InjectionData3)))
+
+    print("Predictions for inResinTemp changes:\n", predictions1)
+    print("Predictions for inMoldTemp changes:\n", predictions2)
+    print("Predictions for inTime changes:\n", predictions3)
+
+    labels = [resin_temps.flatten().tolist(), mold_temps.flatten().tolist(), times.flatten().tolist()]
+    predictions = [predictions1.flatten().tolist(), predictions2.flatten().tolist(), predictions3.flatten().tolist()]
+
+    return labels, predictions
+
 
 @app.post("/predict", status_code=200)
-async def predictDl(x:InDataset):
-
+async def predictDl(x: InDataset):
     print(x)
     # 화면입력데이터 변수 할당
     inResinTemp = x.inResinTemp
     inMoldTemp = x.inMoldTemp
-    inTime =x.inTime
+    inTime = x.inTime
     print("step1")
     # 예측을 위한 데이터셋 생성
     InjectionData = pd.DataFrame([[inResinTemp, inMoldTemp, inTime]])
     # 예측
     print(InjectionData)
     predictValue = model.predict(scaler.transform(InjectionData))[0][0]
+
+    labels, predictions = resin_graph_data(inResinTemp, inMoldTemp, inTime)
+
     print("prediction : ", predictValue)
-    result = {'predictions': resin_graph_data(inResinTemp, inMoldTemp, inTime).tolist(),
-            'prediction': predictValue}
+    result = {
+        'Rtemp_labels': labels[0],
+        'Mtemp_labels': labels[1],
+        'Time_labels': labels[2],
+        'Rtemp_predictions': predictions[0],
+        'Mtemp_predictions': predictions[1],
+        'Time_predictions': predictions[2],
+        'prediction': round(float(predictValue), 2)
+    }
 
     return result
 
+
 @app.get("/")
 async def root():
-    return {"message":"onine"}
+    return {"message": "onine"}
+
 
 import uvicorn
-if __name__ == "__main__":
-  # IP:Injection Pressure (해석 사출압)
-  uvicorn.run("injection:app", host="0.0.0.0", port=9999, log_level="debug",
-    proxy_headers=True, reload=True)
 
+if __name__ == "__main__":
+    # IP:Injection Pressure (해석 사출압)
+    uvicorn.run("injection:app", host="0.0.0.0", port=9999, log_level="debug",
+                proxy_headers=True, reload=True)
