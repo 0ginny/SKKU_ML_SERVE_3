@@ -104,30 +104,33 @@ def resin_graph_data(inResinTemp, inMoldTemp, inTime):
 
 @app.post("/predict", status_code=200)
 async def predictDl(x: InDataset):
-    print(x)
-    # 화면입력데이터 변수 할당
-    inResinTemp = x.inResinTemp
-    inMoldTemp = x.inMoldTemp
-    inTime = x.inTime
-    print("step1")
-    # 예측을 위한 데이터셋 생성
-    InjectionData = pd.DataFrame([[inResinTemp, inMoldTemp, inTime]])
-    # 예측
-    print(InjectionData)
-    predictValue = model.predict(scaler.transform(InjectionData))[0][0]
+    try :
+        print(x)
+        # 화면입력데이터 변수 할당
+        inResinTemp = x.inResinTemp
+        inMoldTemp = x.inMoldTemp
+        inTime = x.inTime
+        print("step1")
+        # 예측을 위한 데이터셋 생성
+        InjectionData = pd.DataFrame([[inResinTemp, inMoldTemp, inTime]])
+        # 예측
+        print(InjectionData)
+        predictValue = model.predict(scaler.transform(InjectionData))[0][0]
 
-    labels, predictions = resin_graph_data(inResinTemp, inMoldTemp, inTime)
+        labels, predictions = resin_graph_data(inResinTemp, inMoldTemp, inTime)
 
-    print("prediction : ", predictValue)
-    result = {
-        'Rtemp_labels': labels[0],
-        'Mtemp_labels': labels[1],
-        'Time_labels': labels[2],
-        'Rtemp_predictions': predictions[0],
-        'Mtemp_predictions': predictions[1],
-        'Time_predictions': predictions[2],
-        'prediction': round(float(predictValue), 2)
-    }
+        print("prediction : ", predictValue)
+        result = {
+            'Rtemp_labels': labels[0],
+            'Mtemp_labels': labels[1],
+            'Time_labels': labels[2],
+            'Rtemp_predictions': predictions[0],
+            'Mtemp_predictions': predictions[1],
+            'Time_predictions': predictions[2],
+            'prediction': round(float(predictValue), 2)
+        }
+    except Exception:
+        result = {"prediction" : 0}
 
     return result
 
