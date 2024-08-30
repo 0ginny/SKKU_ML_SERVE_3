@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>사출압데이터 분석</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Intro Section -->
+    <section class="intro-section text-center bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 class="display-6"> 사출압데이터 분석 서비스 </h1>
+                    <p class="text-muted" style="font-size: 14px; color: silver;">made by 주가성 & 김영진</p>
+                    <p class="lead"> <a href="https://github.com/0ginny/SKKU_ML_SERVE_3"
+                            style="color: pink;">github.com/0ginny/SKKU_ML_SERVE_3 </a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .highlight-box {
+            border: 5px solid #FF5733;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+
+    <style>
+        .highlighted-text {
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+        }
+    </style>
+
+    <style>
+        .highlight2-box {
+            border: 5px solid silver;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: silver;
+            /* 배경색을 은색으로 설정 */
+        }
+    </style>
+
+    <style>
+        .highlighted2-text {
+            font-size: 20px;
+            padding: 10px;
+            color: white;
+            /* 글자색을 흰색으로 설정 */
+        }
+    </style>
+
+    <!-- 탭 내용 추가 -->
+    <div class="tab-content" id="myTabContent">
+
+        <div class="tab-pane fade show active" id="new" role="tabpanel" aria-labelledby="new-tab">
+
+            <!-- 첫번째 탭  -->
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="dropdown mb-3">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="modelDropdown"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                모델 선택
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="modelDropdown">
+                                <a class="dropdown-item" href="#" onclick="changeModel('Staroy HP1000X')">모델: Staroy
+                                    HP1000X</a>
+                                <a class="dropdown-item" href="#" onclick="changeModel('HF-380G')">모델: HF-380G</a>
+                                <a class="dropdown-item" href="#" onclick="changeModel('Lexan 101')">모델: Lexan 101</a>
+                                <!-- 다른 모델들을 추가하십시오 -->
+                            </div>
+                        </div>
+
+                        <!-- 모델 헤더 및 이미지 -->
+                        <h1 id="modelHeader" class="mb-3 text-center" style="font-size: 20px;"> 모델: Staroy HP1000X </h1>
+                        <div class="text-center">
+                            <img id="modelImage" src="../static/images/Staroy HP1000X.png" alt="Staroy HP1000X.png"
+                                class="img-fluid" style="max-width: 50%; height: auto;">
+                        </div>
+                        <!-- Add the image here -->
+                        <div id="imageContainer">
+                            <div class="highlight2-box">
+                                <label class="highlighted2-text">
+                                    <b style="font-size: 20px;">사출압 데이터 분석 방법</b><br>
+                                    조건값(금형온도, 수지온도 및 충전시간)을 입력 후 분석시작을 클릭하세요. AI가 분석한 사출압 값이 산출됩니다.
+                                </label>
+                            </div>
+                            <img src="../static/images/ip.png" alt="slab_predict.png" class="img-fluid">
+                        </div>
+                        <br>
+                        <form>
+
+                            <div class="form-group">
+                                <label for="features1"><b>수지온도</b> <span style="font-size: 14px; color: #888;">추천 수지온도:
+                                        210~230</span></label>
+                                <input type="text" class="form-control" id="features1" placeholder="수지온도를 입력하세요">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="features2"><b>금형온도</b><span style="font-size: 14px; color: #888;">추천 금형온도:
+                                        40~70</span></label>
+                                <input type="text" class="form-control" id="features2" placeholder="금형온도를 입력하세요">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="features3"><b>충전 시간</b><span style="font-size: 14px; color: #888;">추천 충전시간:
+                                        0.5~3.5</span></label>
+                                <input type="text" class="form-control" id="features3" placeholder="충전시간을 입력하세요">
+                            </div>
+
+                            <!-- <button type="button" class="btn btn-success btn-block" id="downloadBtn1">샘플데이터 다운로드</button> -->
+                            <!-- <br> -->
+                            <button type="button" class="btn btn-primary btn-block" id="prdBtn">분석 시작</button>
+                            <div id="baseResult"></div>
+                            <div class="mt-4" id="chartContainer"></div>
+                        </form>
+                        <div class="mt-4" id="result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeModel(modelName) {
+            document.getElementById('modelHeader').innerText = `모델: ${modelName}`;
+            document.getElementById('modelImage').src = `../static/images/${modelName}.png`;
+        }
+    </script>
+
+    <script>
+        // 새로운 탭 클릭 시 해당 탭으로 이동하는 함수
+        $(document).ready(function () {
+            $('#new-tab').on('click', function (e) {
+                e.preventDefault()
+                $(this).tab('show')
+            })
+        });
+
+    </script>
+
+    <script>
+        var Rtemp_labels
+        var Mtemp_labels
+        var Time_labels
+        var Rtemp_predictions
+        var Mtemp_predictions
+        var Time_predictions
+        // config.json 파일 로드
+        var newHostname = "user-ip";
+        var newPort = "9999";
+
+        // 분석시작 버튼 클릭 시 분석서버와 연계 코드
+        $("#prdBtn").click(function () {
+            $("#baseResult").empty();
+
+            let selectedFeat1 = Number($("#features1").val());
+            let selectedFeat2 = Number($("#features2").val());
+            let selectedFeat3 = Number($("#features3").val());
+
+            let urlBase = `http://${newHostname}:${newPort}`;
+
+            let urlFullBase = urlBase + "/predict";
+
+            let reqDataBase = {
+                'inResinTemp': selectedFeat1,
+                'inMoldTemp': selectedFeat2,
+                'inTime': selectedFeat3,
+            };
+
+            const headersBase = {
+                "Content-Type": "application/json"
+            };
+
+            const dataBase = JSON.stringify(reqDataBase);
+            console.log(dataBase);
+
+            $.ajax({
+                url: urlFullBase,
+                headers: headersBase,
+                data: dataBase,
+                method: 'POST',
+                success: function (data) {
+                    console.log(data);
+                    $("#baseResult").append(`<div class="highlight-box">
+                      <div id="baseResult" class="highlighted-text">
+                          사출압: ${data.prediction} Pa
+                      </div>
+                      </div>`);
+
+                    Rtemp_labels = data.Rtemp_labels;
+                    Mtemp_labels = data.Mtemp_labels;
+                    Time_labels = data.Time_labels;
+                    Rtemp_predictions = data.Rtemp_predictions;
+                    Mtemp_predictions = data.Mtemp_predictions;
+                    Time_predictions = data.Time_predictions;
+                    console.log(Rtemp_predictions)
+
+
+                    // 그래프가 그려질 캔버스 요소 추가
+                    $('#chartContainer').html(`
+                    <canvas id="myChart1" width="400" height="200"></canvas>
+                    <canvas id="myChart2" width="400" height="200"></canvas>
+                    <canvas id="myChart3" width="400" height="200"></canvas>
+                    `);
+
+                    var ctx1 = document.getElementById('myChart1').getContext('2d');
+                    var myChart1 = new Chart(ctx1, {
+                        type: 'line',
+                        data: {
+                            labels: Rtemp_labels,
+                            datasets: [{
+                                label: '사출압(Pa)',
+                                data: Rtemp_predictions,
+                                borderColor: 'rgba(128, 188, 189, 1)',
+                                fill: false,
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `수지온도(℃) 변화시 사출압 (금형온도 : ${selectedFeat2}℃ , 충전시간 : ${selectedFeat3}s)`
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    suggestedMin: Math.min(...Rtemp_predictions) - 1,
+                                    suggestedMax: Math.max(...Rtemp_predictions) + 1
+                                }
+                            }
+                        }
+                    });
+
+                    var ctx2 = document.getElementById('myChart2').getContext('2d');
+                    var myChart2 = new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: Mtemp_labels,
+                            datasets: [{
+                                label: '사출압(Pa)',
+                                data: Mtemp_predictions,
+                                borderColor: 'rgba(170, 217, 187, 1)',
+                                fill: false,
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `금형온도(℃) 변화시 사출압 (수지온도 : ${selectedFeat1}℃ , 충전시간 : ${selectedFeat3}s)`
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    suggestedMin: Math.min(...Mtemp_predictions) - 1,
+                                    suggestedMax: Math.max(...Mtemp_predictions) + 1
+                                }
+                            }
+                        }
+                    });
+
+                    var ctx3 = document.getElementById('myChart3').getContext('2d');
+                    var myChart3 = new Chart(ctx3, {
+                        type: 'line',
+                        data: {
+                            labels: Time_labels,
+                            datasets: [{
+                                label: '사출압(Pa)',
+                                data: Time_predictions,
+                                borderColor: 'rgba(213, 240, 193, 1)',
+                                fill: false,
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `충전시간(s) 변화시 사출압 (수지온도 : ${selectedFeat1}℃ , 금형온도 : ${selectedFeat2}℃)`
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    suggestedMin: Math.min(...Time_predictions) - 1,
+                                    suggestedMax: Math.max(...Time_predictions) + 1
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
